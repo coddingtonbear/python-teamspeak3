@@ -1,20 +1,12 @@
 from telnetlib import Telnet
 
 from message import Message
-from command import Command
 
 class TeamspeakConnection(Telnet):
     def __init__(self, hostname, port, timeout, pipe_in, pipe_out):
         self.pipe_in = pipe_in
         self.pipe_out = pipe_out
         Telnet.__init__(self, hostname, port, timeout)
-
-        self.write_command(
-                Command('clientnotifyregister', {
-                        'schandlerid': '1',
-                        'event': 'any',
-                    })
-                )
 
     def write_command(self, command):
         self.write("%s\n" % command.get_output())

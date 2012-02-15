@@ -15,6 +15,13 @@ class Client(object):
             )
         self.proc.start()
 
+    def __enter__(self, *args, **kwargs):
+        return Client(*args, **kwargs)
+
+    def __exit__(self, type, value, traceback):
+        self.proc.terminate()
+        return True
+
     def close(self):
         self.proc.terminate()
 

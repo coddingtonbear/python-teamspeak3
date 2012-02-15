@@ -5,6 +5,7 @@ class Message(object):
             }
 
     def __init__(self, command):
+        command = command.strip()
         if not command:
             raise ValueError("No command")
 
