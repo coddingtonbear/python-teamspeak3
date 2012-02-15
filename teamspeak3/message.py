@@ -30,6 +30,9 @@ class Message(object):
             value = value.replace(fr, to)
         return value
 
+    def __getitem__(self, key):
+        return self.args[key]
+
     def __str__(self):
         return self.command
 
