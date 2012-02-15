@@ -21,7 +21,7 @@
 from client import *
 from command import *
 
-__version__ = (0, 1, 2, )
+__version__ = (1, 0, 0, )
 
 def get_version():
     return '.'.join(str(bit) for bit in __version__)
