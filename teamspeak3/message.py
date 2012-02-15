@@ -22,6 +22,7 @@ class Message(object):
     MAPPINGS = {
             '\\s': ' ',
             '\\n': '\n',
+            '\\/': '/',
             }
 
     def __init__(self, command):

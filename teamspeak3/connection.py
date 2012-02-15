@@ -19,18 +19,25 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from telnetlib import Telnet
+from time import time, sleep
 
 from message import Message
 from command import Command
 
 class TeamspeakConnection(Telnet):
-    def __init__(self, hostname, port, timeout, pipe_in, pipe_out):
+    def __init__(self, hostname, port, timeout, pipe_in, pipe_out, keep_alive=30, poll_interval=0.25):
         self.pipe_in = pipe_in
         self.pipe_out = pipe_out
+
+        self.keep_alive = keep_alive
+        self.poll_interval = poll_interval
         Telnet.__init__(self, hostname, port, timeout)
 
     def write_command(self, command):
         self.write("%s\n" % command.get_output())
+
+    def write_keep_alive(self):
+        self.write("\n")
 
     def main_loop(self):
         while True:
@@ -41,10 +48,15 @@ class TeamspeakConnection(Telnet):
             incoming = self.receive_message()
             if incoming:
                 self.pipe_out.put(incoming)
+            if int(time()) % self.keep_alive == 0:
+                self.write_keep_alive()
+            sleep(self.poll_interval)
 
     def receive_message(self):
-        incoming_message = self.read_until('\n', self.timeout)
         try:
+            incoming_message = self.read_until('\n', self.timeout)
             return Message(incoming_message)
         except ValueError:
             return None
+        except Exception as e:
+            return e

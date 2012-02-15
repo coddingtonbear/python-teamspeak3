@@ -21,6 +21,7 @@
 from multiprocessing import Process, Queue
 
 from connection import TeamspeakConnection
+from command import Command
 
 __all__ = ['Client']
 
@@ -62,8 +63,24 @@ class Client(object):
     def get_message(self):
         if not self.pipe_in.empty():
             msg = self.pipe_in.get_nowait()
-            return msg
+            if isinstance(msg, Exception):
+                raise msg
+            else:
+                return msg
         return None
+
+    def subscribe(self, type='any'):
+        """
+        Shortcut method to subscribe to all messages received from the client.
+        """
+        return self.send_command(
+                    Command(
+                            'clientnotifyregister', {
+                                    'schandlerid': '0',
+                                    'event': type,
+                                }
+                        )
+                )
 
     def send_command(self, command):
         self.pipe_out.put(command)
