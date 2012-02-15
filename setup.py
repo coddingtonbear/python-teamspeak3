@@ -6,7 +6,7 @@ setup(
     name='teamspeak3',
     version=get_version(),
     url='http://bitbucket.org/latestrevision/python-teamspeak3/',
-    description='Interact with teamspeak with Python',
+    description='Interact with teamspeak clients from Python',
     author='Adam Coddington',
     author_email='me@adamcoddington.net',
     classifiers=[
