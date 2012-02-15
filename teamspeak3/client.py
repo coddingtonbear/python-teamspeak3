@@ -51,6 +51,14 @@ class Client(object):
         conn = TeamspeakConnection(hostname, port, timeout, pipe_out, pipe_in)
         conn.main_loop()
 
+    def get_messages(self):
+        messages = []
+        while True:
+            message = self.get_message()
+            if not message:
+                return messages
+            messages.append(message)
+
     def get_message(self):
         if not self.pipe_in.empty():
             msg = self.pipe_in.get_nowait()
