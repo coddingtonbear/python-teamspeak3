@@ -6,7 +6,7 @@ on your computer using Python rather than using the built-in lua interface.
 ## Use
 
 I wrote this library to satisfy a need on my part, so you can find a detailed
-example at https://bitbucket.org/latestrevision/teamspeak-notification, but
+example at [teamspeak-notification](https://bitbucket.org/latestrevision/teamspeak-notification), but
 briefly, let's go over subscribing to incoming messages the hard way:
 
     import teamspeak3
