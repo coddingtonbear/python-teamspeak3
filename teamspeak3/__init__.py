@@ -19,9 +19,9 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from client import *
-from command import *
+from message import *
 
-__version__ = (1, 0, 3, )
+__version__ = (1, 0, 4, )
 
 def get_version():
     return '.'.join(str(bit) for bit in __version__)
