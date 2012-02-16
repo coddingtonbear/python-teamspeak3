@@ -21,8 +21,7 @@
 from telnetlib import Telnet
 from time import time, sleep
 
-from message import Message
-from command import Command
+from message import Command, Message
 
 class TeamspeakConnection(Telnet):
     def __init__(self, hostname, port, timeout, pipe_in, pipe_out, keep_alive=30, poll_interval=0.25):
@@ -34,7 +33,7 @@ class TeamspeakConnection(Telnet):
         Telnet.__init__(self, hostname, port, timeout)
 
     def write_command(self, command):
-        self.write("%s\n" % command.get_output())
+        self.write("%s\n" % str(command))
 
     def write_keep_alive(self):
         self.write("\n")

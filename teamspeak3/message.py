@@ -18,6 +18,8 @@
 # CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+__all__ = ['Message', 'Command']
+
 class Message(object):
     MAPPINGS = {
             '\\\\': '\\',
@@ -59,17 +61,38 @@ class Message(object):
             value = value.replace(fr, to)
         return value
 
+    def _clean_outgoing_value(self, value):
+        value = str(value)
+        for fr, to in self.MAPPINGS.items():
+            if to:
+                value = value.replace(to, fr)
+        return value
+
     def __getitem__(self, key):
         return self.args[key]
 
     def __str__(self):
-        return self.command
+        arglist = []
+        for param, value in self.args.items():
+            arglist.append("%s=%s" % (
+                    param,
+                    self._clean_outgoing_value(value),
+                ))
+        return "%s %s" % (
+                    self.command,
+                    " ".join(arglist),
+                )
 
     def __unicode__(self):
         return unicode(self.__str__())
 
     def __repr__(self):
         return "<%s %s>" % (
-                    self.__str__(),
+                    self.command,
                     self.args
                 )
+
+class Command(Message):
+    def __init__(self, command, **kwargs):
+        self.command = command
+        self.args = kwargs

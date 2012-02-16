@@ -21,7 +21,7 @@
 from multiprocessing import Process, Queue
 
 from connection import TeamspeakConnection
-from command import Command
+from message import Command
 
 __all__ = ['Client']
 
