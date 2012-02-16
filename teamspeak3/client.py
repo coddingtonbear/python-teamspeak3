@@ -75,10 +75,9 @@ class Client(object):
         """
         return self.send_command(
                     Command(
-                            'clientnotifyregister', {
-                                    'schandlerid': '0',
-                                    'event': type,
-                                }
+                            'clientnotifyregister',
+                            schandlerid=0,
+                            event=type
                         )
                 )
 

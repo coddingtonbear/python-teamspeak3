@@ -23,14 +23,12 @@ from message import Message
 __all__ = ['Command']
 
 class Command(Message):
-    def __init__(self, command, args = None):
+    def __init__(self, command, **kwargs):
         self.command = command
-        if args:
-            self.args = args
-        else:
-            self.args = {}
+        self.args = kwargs
 
     def _clean_outgoing_value(self, value):
+        value = str(value)
         for fr, to in self.MAPPINGS.items():
             value = value.replace(to, fr)
         return value

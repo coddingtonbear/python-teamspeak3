@@ -14,10 +14,9 @@ briefly, let's go over subscribing to incoming messages the hard way:
     client = teamspeak3.Client()
     client.send_command(
         teamspeak3.Command(
-            'clientnotifyregister', {
-                'event': 'any',
-                'schandlerid': '0'
-            }
+            'clientnotifyregister',
+            event='any',
+            schandlerid='0'
         )
     )
 
