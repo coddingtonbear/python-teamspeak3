@@ -20,9 +20,17 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 class Message(object):
     MAPPINGS = {
-            '\\s': ' ',
-            '\\n': '\n',
+            '\\\\': '\\',
             '\\/': '/',
+            '\\s': ' ',
+            '\\p': '|',
+            '\\a': '',
+            '\\b': '',
+            '\\f': '\n',
+            '\\n': '\n',
+            '\\r': '\n',
+            '\\t': '\t',
+            '\\v': '',
             }
 
     def __init__(self, command):
