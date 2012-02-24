@@ -18,10 +18,13 @@
 # CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+import logging
 from multiprocessing import Process, Queue
+from time import sleep
 
 from connection import TeamspeakConnection
 from message import Command
+from exceptions import TeamspeakConnectionLost, TeamspeakConnectionFailed
 
 __all__ = ['Client']
 
@@ -29,12 +32,30 @@ class Client(object):
     def __init__(self, hostname='127.0.0.1', port=25639, timeout=0.25):
         self.pipe_out = Queue()
         self.pipe_in = Queue()
+        self.timeout = timeout
+
+        self.logger = logging.getLogger('teamspeak3.Client')
 
         self.proc = Process(
                 target=self.__class__.start_connection,
                 args = (hostname, port, timeout, self.pipe_in, self.pipe_out)
             )
         self.proc.start()
+
+        self._verify_initial_connection()
+
+    def _verify_initial_connection(self):
+        command = Command(
+                'whoami',
+            )
+        self.send_command(command)
+        attempts = 100
+        for attempt in range(attempts):
+            message = self.get_message()
+            if message and message.is_response_to(command):
+                return True
+            sleep(self.timeout)
+        raise TeamspeakConnectionFailed()
 
     def __enter__(self, *args, **kwargs):
         return Client(*args, **kwargs)
@@ -67,6 +88,8 @@ class Client(object):
                 raise msg
             else:
                 return msg
+        if not self.proc.is_alive():
+            raise TeamspeakConnectionLost()
         return None
 
     def subscribe(self, type='any'):
@@ -82,4 +105,6 @@ class Client(object):
                 )
 
     def send_command(self, command):
+        if not self.proc.is_alive():
+            raise TeamspeakConnectionLost()
         self.pipe_out.put(command)

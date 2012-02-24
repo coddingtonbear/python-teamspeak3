@@ -42,15 +42,36 @@ class Message(object):
 
         self.raw_command = command
 
-        self.args = self._get_arguments_from_string(self.raw_command)
         self.command = self._get_command_from_string(self.raw_command)
+        self.args = self._get_arguments_from_string(self.raw_command)
+
+    def is_reset_message(self):
+        if self.command == 'error':
+            return True
+        return False
+
+    def is_response(self):
+        if self.command:
+            return False
+        return True
+
+    def is_response_to(self, command):
+        if self.is_response() and self.origination == command:
+            return True
+        return False
+
+    def set_origination(self, command):
+        self.origination = command
 
     def _get_command_from_string(self, cmd):
-        return cmd.split(' ')[0]
+        command = cmd.split(' ')[0]
+        if command.find('=') > -1:
+            command = None
+        return command
 
     def _get_arguments_from_string(self, cmd):
         args = {}
-        raw_args = cmd.split(' ')[1:]
+        raw_args = cmd.split(' ')[1 if self.command else 0:]
         for raw_arg in raw_args:
             attribute, value = raw_arg.split('=', 1)
             args[attribute] = self._clean_incoming_value(value)
@@ -67,6 +88,11 @@ class Message(object):
             if to:
                 value = value.replace(to, fr)
         return value
+
+    def __eq__(self, other):
+        if self.__repr__() == other.__repr__():
+            return True
+        return False
 
     def __getitem__(self, key):
         return self.args[key]
@@ -87,10 +113,16 @@ class Message(object):
         return unicode(self.__str__())
 
     def __repr__(self):
-        return "<%s %s>" % (
-                    self.command,
-                    self.args
-                )
+        if self.is_response():
+            return "<%s %s>" % (
+                        self.origination.__repr__(),
+                        self.args,
+                    )
+        else:
+            return "<%s %s>" % (
+                        self.command,
+                        self.args,
+                    )
 
 class Command(Message):
     def __init__(self, command, **kwargs):

@@ -18,6 +18,8 @@
 # CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+from collections import deque
+import logging
 from telnetlib import Telnet
 from time import time, sleep
 
@@ -28,14 +30,21 @@ class TeamspeakConnection(Telnet):
         self.pipe_in = pipe_in
         self.pipe_out = pipe_out
 
+        self.logger = logging.getLogger('teamspeak3.TeamspeakConnection')
+
+        self.commands_unresponded = deque()
+
         self.keep_alive = keep_alive
         self.poll_interval = poll_interval
         Telnet.__init__(self, hostname, port, timeout)
 
     def write_command(self, command):
+        self.logger.info("Sending command %s" % command.__repr__())
+        self.commands_unresponded.append(command)
         self.write("%s\n" % str(command))
 
     def write_keep_alive(self):
+        self.logger.debug("Sending keepalive message.")
         self.write("\n")
 
     def main_loop(self):
@@ -54,7 +63,15 @@ class TeamspeakConnection(Telnet):
     def receive_message(self):
         try:
             incoming_message = self.read_until('\n', self.timeout)
-            return Message(incoming_message)
+            message = Message(incoming_message)
+            if message.is_response():
+                message.set_origination(
+                            self.commands_unresponded.popleft()
+                        )
+            if message.is_reset_message():
+                self.commands_unresponded = deque()
+            self.logger.info("Received message %s" % message.__repr__())
+            return message
         except ValueError:
             return None
         except Exception as e:

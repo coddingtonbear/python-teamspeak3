@@ -20,8 +20,9 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from client import *
 from message import *
+from exceptions import *
 
-__version__ = (1, 0, 4, )
+__version__ = (1, 2, 0, )
 
 def get_version():
     return '.'.join(str(bit) for bit in __version__)
