@@ -145,6 +145,9 @@ class Message(MessageBase):
     def __getitem__(self, key):
         return self.args[key]
 
+    def keys(self):
+        return self.args.keys()
+
     @property
     def output(self):
         arglist = []

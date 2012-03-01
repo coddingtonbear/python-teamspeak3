@@ -22,7 +22,7 @@ from client import *
 from message import *
 from exceptions import *
 
-__version__ = (1, 3, 0, )
+__version__ = (1, 3, 1, )
 
 def get_version():
     return '.'.join(str(bit) for bit in __version__)
