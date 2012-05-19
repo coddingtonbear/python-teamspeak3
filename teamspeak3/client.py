@@ -20,13 +20,16 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import logging
 from multiprocessing import Process, Queue
+import socket
 from time import sleep
 
 from connection import TeamspeakConnection
 from message import Command
-from exceptions import TeamspeakConnectionLost, TeamspeakConnectionFailed
+from exceptions import TeamspeakConnectionLost, TeamspeakConnectionFailed, \
+        TeamspeakConnectionTelnetEOF
 
 __all__ = ['Client']
+
 
 class Client(object):
     def __init__(self, hostname='127.0.0.1', port=25639, timeout=0.25):
@@ -38,9 +41,10 @@ class Client(object):
 
         self.proc = Process(
                 target=self.__class__.start_connection,
-                args = (hostname, port, timeout, self.pipe_in, self.pipe_out)
+                args=(hostname, port, timeout, self.pipe_in, self.pipe_out)
             )
         self.proc.start()
+        self.logger.debug("Spawned subprocess %s" % self.proc.pid)
 
         self._verify_initial_connection()
 
@@ -49,12 +53,13 @@ class Client(object):
                 'whoami',
             )
         self.send_command(command)
-        attempts = 100
+        attempts = 25
         for attempt in range(attempts):
             message = self.get_message()
             if message and message.is_response_to(command):
                 return True
             sleep(self.timeout)
+        self.close()
         raise TeamspeakConnectionFailed()
 
     def __enter__(self, *args, **kwargs):
@@ -65,13 +70,23 @@ class Client(object):
         return True
 
     def close(self):
+        self.logger.debug("Terminating subprocess %s" % self.proc.pid)
         self.proc.terminate()
 
     @classmethod
     def start_connection(cls, hostname, port, timeout, pipe_in, pipe_out):
         # Connect the out to the in, and the in to the out.
-        conn = TeamspeakConnection(hostname, port, timeout, pipe_out, pipe_in)
-        conn.main_loop()
+        try:
+            conn = TeamspeakConnection(
+                        hostname,
+                        port,
+                        timeout,
+                        pipe_out,
+                        pipe_in
+                    )
+            conn.main_loop()
+        except socket.error:
+            pipe_in.put('TERM')
 
     def get_messages(self):
         messages = []
@@ -82,13 +97,20 @@ class Client(object):
             messages.append(message)
 
     def get_message(self):
-        if not self.pipe_in.empty():
-            msg = self.pipe_in.get_nowait()
-            if isinstance(msg, Exception):
-                raise msg
-            else:
-                return msg
+        try:
+            if not self.pipe_in.empty():
+                msg = self.pipe_in.get_nowait()
+                if isinstance(msg, Exception):
+                    raise msg
+                elif msg == 'TERM':
+                    self.close()
+                else:
+                    return msg
+        except EOFError:
+            self.close()
+            raise TeamspeakConnectionTelnetEOF()
         if not self.proc.is_alive():
+            self.logger.debug("Subprocess %s terminated" % self.proc.pid)
             raise TeamspeakConnectionLost()
         return None
 

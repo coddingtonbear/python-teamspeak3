@@ -6,5 +6,8 @@ class TeamspeakConnectionError(error):
 class TeamspeakConnectionLost(TeamspeakConnectionError):
     pass
 
+class TeamspeakConnectionTelnetEOF(TeamspeakConnectionLost):
+    pass
+
 class TeamspeakConnectionFailed(TeamspeakConnectionError):
     pass
