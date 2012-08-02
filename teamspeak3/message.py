@@ -18,6 +18,8 @@
 # CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+import re
+
 __all__ = ['Message', 'Command']
 
 class MessageFactory(object):
@@ -70,9 +72,7 @@ class MessageBase(object):
         return tuple(items)
 
     def _clean_incoming_value(self, value):
-        for fr, to in self.MAPPINGS.items():
-            value = value.replace(fr, to)
-        return value
+        return re.sub(r'(\\.)', r'%(\1)s', value) % self.MAPPINGS
 
     def _clean_outgoing_value(self, value):
         value = str(value)
