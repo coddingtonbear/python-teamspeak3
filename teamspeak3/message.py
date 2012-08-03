@@ -33,18 +33,26 @@ class MessageFactory(object):
                 return Message(incoming_string)
 
 class MessageBase(object):
-    MAPPINGS = {
+    TO_PYTHON = {
             '\\\\': '\\',
             '\\/': '/',
-            '\\s': ' ',
             '\\p': '|',
-            '\\a': '',
-            '\\b': '',
-            '\\f': '\n',
             '\\n': '\n',
             '\\r': '\n',
+            '\\f': '\n',
             '\\t': '\t',
+            '\\s': ' ',
             '\\v': '',
+            '\\a': '',
+            '\\b': '',
+            }
+    FROM_PYTHON = {
+            '\\': '\\\\',
+            '/': '\\/',
+            '|': '\\p',
+            '\n': '\\n',
+            '\t': '\\t',
+            ' ': '\\s',
             }
 
     def __eq__(self, other):
@@ -71,15 +79,15 @@ class MessageBase(object):
                 )
         return tuple(items)
 
+    def _substitute_using_dictionary(self, dictionary, text):
+        pattern = "(%s)" % "|".join(map(re.escape, dictionary.keys()))
+        return re.sub(pattern, lambda k: dictionary[k.group()], text)
+
     def _clean_incoming_value(self, value):
-        return re.sub(r'(\\.)', r'%(\1)s', value) % self.MAPPINGS
+        return self._substitute_using_dictionary(self.TO_PYTHON, value)
 
     def _clean_outgoing_value(self, value):
-        value = str(value)
-        for fr, to in self.MAPPINGS.items():
-            if to:
-                value = value.replace(to, fr)
-        return value
+        return self._substitute_using_dictionary(self.FROM_PYTHON, value)
 
     @property
     def ultimate_origination(self):
