@@ -72,6 +72,7 @@ class MessageBase(object):
         return tuple(items)
 
     def _clean_incoming_value(self, value):
+        value = value.replace('%', '%%')  # Escape % signs
         return re.sub(r'(\\.)', r'%(\1)s', value) % self.MAPPINGS
 
     def _clean_outgoing_value(self, value):
