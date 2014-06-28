@@ -95,6 +95,7 @@ class Message(MessageBase):
         if not command:
             raise ValueError("No command")
 
+        self.origination = None
         self.raw_command = command
 
         self.command = self._get_command_from_string(self.raw_command)
@@ -106,12 +107,12 @@ class Message(MessageBase):
         return False
 
     def is_response(self):
-        if self.command:
+        if not self.is_reset_message() and self.command:
             return False
         return True
 
     def is_response_to(self, command):
-        if self.is_response() and self.origination == command:
+        if self.origination == command:
             return True
         return False
 

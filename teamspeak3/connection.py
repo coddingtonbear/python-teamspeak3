@@ -69,14 +69,17 @@ class TeamspeakConnection(Telnet):
                 self.logger.debug("Incoming string \"%s\"" % incoming_message)
                 message = MessageFactory.get_message(incoming_message)
                 if message:
-                    if message.is_response():
+                    if message.is_reset_message():
                         message.set_origination(
-                                    self.commands_unresponded.popleft()
-                                )
-                    elif message.is_reset_message():
+                            self.commands_unresponded.popleft()
+                        )
                         # Command didn't ask for a response
                         if self.commands_unresponded:
                             self.commands_unresponded.popleft()
+                    elif message.is_response():
+                        message.set_origination(
+                            self.commands_unresponded.popleft()
+                        )
                     self.logger.info("Received message %s" % message.__repr__())
                     return message
         except ValueError as e:
