@@ -5,7 +5,7 @@ from teamspeak3 import get_version
 setup(
     name='teamspeak3',
     version=get_version(),
-    url='http://bitbucket.org/latestrevision/python-teamspeak3/',
+    url='http://github.com/coddingtonbear/python-teamspeak3/',
     description='Interact with teamspeak clients from Python',
     author='Adam Coddington',
     author_email='me@adamcoddington.net',
